@@ -1,38 +1,27 @@
-.App {
-  text-align: center;
+/* src/App.css */
+/* General body styles */
+body {
+  font-family: 'Avenir Next', Arial, sans-serif;
+  margin: 0; /* Removes default margin around the body */
+  padding: 0; /* Removes default padding around the body */
+  background-color: #f4f7f8; /* Light gray background color for the entire page */
+  color: #333; /* Sets the default text color to dark gray for readability */
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+/* Styling for input fields */
+input {
+  font-family: 'Avenir Next', Arial, sans-serif;
+  padding: 10px; /* Adds padding inside the input for spacing */
+  margin-top: 5px; /* Adds space above each input field */
+  border: 1px solid #ccc; /* Light gray border around the input fields */
+  border-radius: 5px; /* Rounds the corners of input fields slightly */
+  width: 100%; /* Ensures input fields take the full width of their container */
+  box-sizing: border-box; /* Includes padding and border in the total width and height of inputs */
+  background-color: #f0f4f8; /* Slightly darker background for inputs to differentiate from page background */
 }
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+header {
+  margin-bottom: 60px; /* Space between header and main content */
 }
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
-}
-
-.App-link {
-  color: #61dafb;
-}
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+footer {
+  margin-top: 70px; /* Space between main content and footer */
 }
