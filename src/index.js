@@ -1,17 +1,21 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import './index.css';
-import App from './App';
-import reportWebVitals from './reportWebVitals';
+import React from "react";
+import ReactDOM from "react-dom/client";
+import { ChakraProvider } from "@chakra-ui/react"; // 引入 ChakraProvider
+import "./index.css";
+import App from "./App";
+import Parse from "parse";
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
+// Parse 初始化配置
+const PARSE_APPLICATION_ID = '8ivcqSFgK5yRa0M8qtuzOAUc2n6gkPQswzSwSTdb';
+const PARSE_JAVASCRIPT_KEY = 'Iyt7syrTkEaWx4RJb8ZGdWfVKknyRtcWidDpSFFm';
+const PARSE_HOST_URL = 'https://parseapi.back4app.com/';
+
+Parse.initialize(PARSE_APPLICATION_ID, PARSE_JAVASCRIPT_KEY);
+Parse.serverURL = PARSE_HOST_URL;
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
-  <React.StrictMode>
+  <ChakraProvider>
     <App />
-  </React.StrictMode>
+  </ChakraProvider>
 );
-
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
-reportWebVitals();
