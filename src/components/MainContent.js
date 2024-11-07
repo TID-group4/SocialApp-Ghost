@@ -1,23 +1,87 @@
 // src/components/MainContent.js
-import React, { useState } from 'react';
-import profileImage from '../material/john.png'; // Import the profile image
+import React, { useState, useEffect } from 'react';
+import Parse from '../parseConfig';
+import initialProfileImage from '../material/john.png'; // Import the initial profile image
 
 function MainContent() {
   // State to control edit mode
   const [isEditing, setIsEditing] = useState(false);
 
-  // State for form fields
+  // State for form fields initialized as empty
   const [formData, setFormData] = useState({
-    fullName: "John Doe",
-    gender: "Male",
-    language: "English",
-    nickName: "@john_d",
-    email: "JohnD@itu.dk",
-    country: "Denmark",
+    fullName: '',
+    gender: '',
+    language: '',
+    nickName: '',
+    email: '',
+    country: '',
+    avatar: initialProfileImage, // Default avatar
   });
 
-  // Toggle edit mode and save changes
-  const toggleEditMode = () => {
+  // State to store the file object for the avatar
+  const [avatarFile, setAvatarFile] = useState(null);
+
+  // Function to fetch user data from the database
+  const fetchUserData = async () => {
+    const User = Parse.Object.extend('_User');
+    const query = new Parse.Query(User);
+
+    try {
+      const user = await query.first(); // Fetch the first user record from the database
+      if (user) {
+        setFormData({
+          fullName: user.get('fullName') || '',
+          gender: user.get('gender') || '',
+          language: user.get('language') || '',
+          nickName: user.get('username') || '', // Ensure 'username' matches the database
+          email: user.get('email') || '',
+          country: user.get('country') || '',
+          avatar: user.get('avatar')?.url() || initialProfileImage,
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+      alert('Failed to fetch user data. Please try again later.');
+    }
+  };
+
+  // Fetch user data when the component mounts
+  useEffect(() => {
+    fetchUserData();
+  }, []);
+
+  // Toggle edit mode and save changes to the database
+  const toggleEditMode = async () => {
+    if (isEditing) {
+      // Save changes to the database when exiting edit mode
+      const User = Parse.Object.extend('_User');
+      const query = new Parse.Query(User);
+
+      try {
+        const user = await query.first(); // Get the first user record from the database
+        if (user) {
+          user.set('fullName', formData.fullName);
+          user.set('gender', formData.gender);
+          user.set('language', formData.language);
+          user.set('username', formData.nickName); // Ensure 'username' matches the database
+          user.set('email', formData.email);
+          user.set('country', formData.country);
+
+          // Save the avatar as a Parse.File if a new file has been uploaded
+          if (avatarFile) {
+            const parseFile = new Parse.File(avatarFile.name, avatarFile);
+            user.set('avatar', parseFile);
+          }
+
+          await user.save();
+          alert('User data saved successfully!');
+          fetchUserData(); // Refresh the data after saving
+        }
+      } catch (error) {
+        console.error('Error saving user data:', error);
+        alert(`Failed to save user data. Error: ${error.message}`);
+      }
+    }
     setIsEditing(!isEditing);
   };
 
@@ -30,90 +94,73 @@ function MainContent() {
     }));
   };
 
+  // Handle file input change for uploading a new image
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setAvatarFile(file); // Set the file for saving later
+      const reader = new FileReader();
+      reader.onload = () => {
+        setFormData((prevData) => ({
+          ...prevData,
+          avatar: reader.result, // Preview the uploaded image
+        }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   return (
     <main style={styles.main}>
       <div style={styles.profileContainer}>
-        {/* Display the imported profile image */}
-        <img src={profileImage} alt="Profile" style={styles.profileImage} />
-        
+        {/* Display the profile image */}
+        <img src={formData.avatar} alt="Profile" style={styles.profileImage} />
+
         <div style={styles.userInfo}>
           <h2 style={styles.userName}>{formData.fullName}</h2>
           <p style={styles.userEmail}>{formData.email}</p>
         </div>
 
         {/* Edit button toggles edit mode */}
-        <button style={styles.editButton} onClick={toggleEditMode}>
+        <button
+          style={{
+            ...styles.editButton,
+            backgroundColor: isEditing ? '#FF910A' : '#007bff',
+          }}
+          onClick={toggleEditMode}
+        >
           {isEditing ? "Save" : "Edit"}
         </button>
       </div>
-      
+
+      {/* Show file input when in edit mode */}
+      {isEditing && (
+        <div style={styles.inputGroup}>
+          <label style={styles.label}>Upload New Profile Picture</label>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleImageChange}
+            style={styles.fileInput}
+          />
+        </div>
+      )}
+
       <div style={styles.form}>
-        <div style={styles.inputGroup}>
-          <label style={styles.label}>Full Name</label>
-          <input
-            style={styles.input}
-            type="text"
-            name="fullName"
-            value={formData.fullName}
-            onChange={handleInputChange}
-            readOnly={!isEditing}
-          />
-        </div>
-        <div style={styles.inputGroup}>
-          <label style={styles.label}>Gender</label>
-          <input
-            style={styles.input}
-            type="text"
-            name="gender"
-            value={formData.gender}
-            onChange={handleInputChange}
-            readOnly={!isEditing}
-          />
-        </div>
-        <div style={styles.inputGroup}>
-          <label style={styles.label}>Language</label>
-          <input
-            style={styles.input}
-            type="text"
-            name="language"
-            value={formData.language}
-            onChange={handleInputChange}
-            readOnly={!isEditing}
-          />
-        </div>
-        <div style={styles.inputGroup}>
-          <label style={styles.label}>Nick Name</label>
-          <input
-            style={styles.input}
-            type="text"
-            name="nickName"
-            value={formData.nickName}
-            onChange={handleInputChange}
-            readOnly={!isEditing}
-          />
-        </div>
-        <div style={styles.inputGroup}>
-          <label style={styles.label}>Email Address</label>
-          <input
-            style={styles.input}
-            type="text"
-            name="email"
-            value={formData.email}
-            onChange={handleInputChange}
-            readOnly={!isEditing}
-          />
-        </div>
-        <div style={styles.inputGroup}>
-          <label style={styles.label}>Country</label>
-          <input
-            style={styles.input}
-            type="text"
-            name="country"
-            value={formData.country}
-            onChange={handleInputChange}
-            readOnly={!isEditing}
-          />
-        </div>
+        {/* Form fields */}
+        {['fullName', 'gender', 'language', 'nickName', 'email', 'country'].map((field) => (
+          <div key={field} style={styles.inputGroup}>
+            <label style={styles.label}>{field.replace(/^\w/, c => c.toUpperCase()).replace('Name', ' Name')}</label>
+            <input
+              style={styles.input}
+              type="text"
+              name={field}
+              value={formData[field]}
+              onChange={handleInputChange}
+              readOnly={!isEditing}
+            />
+          </div>
+        ))}
       </div>
     </main>
   );
@@ -153,7 +200,6 @@ const styles = {
     margin: 0,
   },
   editButton: {
-    backgroundColor: '#007bff',
     color: '#fff',
     border: 'none',
     borderRadius: '5px',
@@ -179,6 +225,9 @@ const styles = {
     borderRadius: '5px',
     border: '1px solid #ccc',
     fontSize: '16px',
+  },
+  fileInput: {
+    marginTop: '10px',
   },
 };
 
